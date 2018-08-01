@@ -1,26 +1,30 @@
 # Set global values
 STEPCOUNTER=false # Changes to true if user choose to install Tux Everywhere
-RED='\033[0;31m'
+YELLOW='\033[1;33m'
+LIGHT_GREEN='\033[1;32m'
+LIGHT_RED='\033[1;31m'
 NC='\033[0m' # No Color
 
 function install {
     printf "\033c"
-    header "Adding tuxedo class to your DESKTOP" "$1"
+    header "TUX DESKTOP THEMES" "$1"
     echo "Tux has scanned the web for the best themes and he likes:"
     echo "   - Flat Remix GTK3 theme by daniruz <https://github.com/daniruiz/Flat-Remix-GTK>"
     echo "   - Paper Icon & Cursor Theme at snwh.org <https://snwh.org/paper>"
-    #echo "   - Roboto Font by Google <https://www.fontsquirrel.com/fonts/roboto>"
+    echo "   - Roboto Font by Google <https://www.fontsquirrel.com/fonts/roboto>"
     echo ""
     echo "(Type 1 or 2, then press ENTER)"
     select yn in "Yes" "No"; do
         case $yn in
             Yes ) 
                 printf "\033c"
-                header "Adding tuxedo class to your DESKTOP" "$1"
+                header "TUX DESKTOP THEMES" "$1"
                 echo "Installing packages..."
                 check_sudo
 
-                sudo add-apt-repository ppa:snwh/ppa
+                # To eliminate the yes for adding the repository we add this echo, since echo implicitly sends a new line
+                # https://stackoverflow.com/questions/6264596/simulating-enter-keypress-in-bash-script
+                echo | sudo add-apt-repository ppa:snwh/ppa
                 # Update apt-get
 
                 echo "Tux will now update your apt-get lists before install (which may take a while)."
@@ -28,32 +32,54 @@ function install {
                 sleep 1
                 sudo apt-get update
                 # Install packages
-                install_if_not_found "arc-theme paper-icon-theme paper-cursor-theme"
-                # Download and install Roboto Fonts (as described here: https://wiki.ubuntu.com/Fonts)
-                # if fc-list | grep -i roboto >/dev/null; then
-                #     echo "Roboto fonts already installed"
-                # else
-                #     echo "Installing Roboto fonts by Google."
-                #     roboto_temp_dir=$(mktemp -d)
-                #     wget -O $roboto_temp_dir/roboto.zip https://www.fontsquirrel.com/fonts/download/roboto
-                #     unzip $roboto_temp_dir/roboto.zip -d $roboto_temp_dir
-                #     sudo mkdir -p ~/.fonts
-                #     sudo cp $roboto_temp_dir/*.ttf ~/.fonts/
-                #     echo "Successfully installed Roboto Font by Google."
-                #     echo ""
-                #     echo "Tux will now update your font cache (may take a while)"
-                #     echo ""
-                #     sleep 1
-                #     fc-cache -f -v
-                # fi
+                install_if_not_found "arc-theme paper-icon-theme"
+                
+                #Download and install Roboto Fonts (as described here: https://wiki.ubuntu.com/Fonts)
+                if fc-list | grep -i roboto >/dev/null; then
+                    echo "Roboto fonts already installed"
+                else
+                    echo "Installing Roboto fonts by Google."
+                    roboto_temp_dir=$(mktemp -d)
+                    wget -O $roboto_temp_dir/roboto.zip https://www.fontsquirrel.com/fonts/download/roboto
+                    unzip $roboto_temp_dir/roboto.zip -d $roboto_temp_dir
+                    sudo mkdir -p ~/.fonts
+                    sudo cp $roboto_temp_dir/*.ttf ~/.fonts/
+                    echo "Successfully installed Roboto Font by Google."
+                    echo ""
+                    echo "Tux will now update your font cache (may take a while)"
+                    echo ""
+                    sleep 1
+                    fc-cache -f -v
+                fi
+
+                gsettings set org.gnome.desktop.interface gtk-theme "Arc-Dark"
+                gsettings set org.gnome.desktop.interface icon-theme "Paper"
+                gsettings set org.gnome.desktop.interface cursor-theme "Paper"
+                gsettings set org.gnome.desktop.wm.preferences titlebar-font "Roboto Bold 11"
+                gsettings set org.gnome.desktop.interface document-font-name "Roboto 11"
+                gsettings set org.gnome.desktop.interface font-name "Roboto 11"
+
                 printf "\033c"
-                header "Adding tuxedo class to your DESKTOP" "$1"
-                echo "Successfully added some theming options á la Tux. It's highly recommended to reboot soon to make everything look properly."
+                header "TUX DESKTOP THEMES" "$1"
+                echo "Successfully added some theming options á la Tux. To change to Arc Dark theme or other"
+                echo "changes you can use Gnome Tweak Tool. Do you want to install and open it?"
                 echo ""
+                select yn in "Yes" "No"; do
+                    case $yn in
+                        Yes ) 
+                            install_if_not_found "gnome-tweak-tool"
+                            gnome-tweaks -a
+                            break;;
+                        No ) printf "\033c"
+                            header "TUX DESKTOP THEMES" "$1"
+                            echo "Tux stares at you with a curious look... Then he smiles and says 'Ok'."
+                            break;;
+                    esac
+                done
                 echo "(However, it's still safe to continue the installation)"
                 break;;
             No ) printf "\033c"
-                header "Adding tuxedo class to your DESKTOP" "$1"
+                header "TUX DESKTOP THEMES" "$1"
                 echo "Tux stares at you with a curious look... Then he smiles and says 'Ok'."
                 break;;
         esac
@@ -64,59 +90,66 @@ function install {
 
 function uninstall { 
     printf "\033c"
-    header "Removing tuxedo class to your DESKTOP" "$1"
-    echo "This will uninstall the desktop themes (Arc Theme, Paper Icons and Paper Cursors). Ready to proceed?"
+    header "TUX DESKTOP THEMES" "$1"
+    echo "This will uninstall Arc Theme, Paper Icons and Paper Cursors as well as the Roboto Fonts"
+    echo "Try changing the themes first in 'gnome-tweaks', which can be installed using:"
+    echo "sudo apt install gnome-tweak-tools"
     echo ""
+    printf "${LIGHT_RED}Are you sure you want to remove TUX DESKTOP THEMES from your system?${NC}\n\n"
     echo "(Type 1 or 2, then press ENTER)"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) 
-                echo "Uninstalling packages..."
+            Yes )
+                printf "${YELLOW}Uninstalling packages...${NC}\n"
                 check_sudo
 
                 if dpkg --get-selections | grep -q "^arc-theme[[:space:]]*install$" >/dev/null; then
                     echo "The following packages will be REMOVED:"
-                    echo "  paper-icon theme paper-cursor-theme"
+                    echo "  arc-theme"
                     read -p "Do you want to continue? [Y/n] " prompt
                     if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
                     then
-                        uninstall_if_found "arc-theme" 
-                        sudo add-apt-repository --remove ppa:snwh/ppa
+                        gsettings set org.gnome.desktop.interface gtk-theme "Adwaita"
+                        uninstall_if_found "arc-theme"
                     fi
                     
                 else
-                    echo "arc-theme not installed."
+                    printf "${YELLOW}arc-theme not found.${NC}\n"
                 fi
                 
 
                 if dpkg --get-selections | grep -q "^paper-icon-theme[[:space:]]*install$" >/dev/null; then
                     echo "The following packages will be REMOVED:"
-                    echo "  paper-icon theme paper-cursor-theme"
+                    echo "  paper-icon theme"
                     read -p "Do you want to continue? [Y/n] " prompt
                     if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
                     then
-                        uninstall_if_found "paper-icon-theme paper-cursor-theme" 
+                        gsettings set org.gnome.desktop.interface icon-theme "ubuntu-mono-dark"
+                        gsettings set org.gnome.desktop.interface cursor-theme "DMZ-White"
+                        uninstall_if_found "paper-icon-theme" 
                         sudo add-apt-repository --remove ppa:snwh/ppa
                     fi
                     
                 else
-                    echo "paper-icon-theme not installed."
+                    printf "${YELLOW}paper-icon-theme not found.${NC}\n"
+                fi
+
+
+                #Download and install Roboto Fonts (as described here: https://wiki.ubuntu.com/Fonts)
+                if fc-list | grep -i roboto >/dev/null; then
+                    printf "${YELLOW}Roboto fonts found, uninstalling now...${NC}\n"
+                    gsettings set org.gnome.desktop.wm.preferences titlebar-font "Ubuntu Bold 11"
+                    gsettings set org.gnome.desktop.interface document-font-name "Sans 11"
+                    gsettings set org.gnome.desktop.interface font-name "Ubuntu Condensed 11"
+                    sudo rm ~/.fonts/Roboto*
+                    fc-cache -f -v
+                else
+                    printf "${YELLOW}Couldn't find the Roboto fonts. Not uninstalling them, obviously :)${NC}\n"
                 fi
 
                 sudo apt -y autoremove
-
-                #mkdir -p /tmp/theme
-                #sudo cp tux-desktop-themes/tux-theme-gsettings.sh /tmp/theme/
-                # Make it executable by all so that lightdm can run it
-                #sudo chmod 0755 /tmp/theme/tux-theme-gsettings.sh
-                # As already mentioned, we need to do it as su, otherwise changes don't take effect
-                #sudo bash tux-desktop-themes/tux-theme-script.sh 
-                # Now we can remove the script from tmp
-                #sudo rm -r /tmp/theme
-
-
                 echo ""
-                echo "Successfully uninstalled the packages you chose"
+                printf "${LIGHT_GREEN}Successfully uninstalled the packages you chose${NC}\n"
                 break;;
             No ) printf "\033c"
             header "Removing tuxedo class to your DESKTOP" "$1"
@@ -124,7 +157,6 @@ function uninstall {
                 break;;
         esac
     done
-    echo "Set your themes in System settings > Appearance and then reboot for chances to take effect."
     echo ""
     read -n1 -r -p "Press any key to continue..." key
 }
@@ -143,10 +175,10 @@ function header {
     ch=' '
     echo "╔══════════════════════════════════════════════════════════════════════════════╗"
     printf "║"
-    printf " $1"
+    printf " ${YELLOW}$1${NC}"
     printf '%*s' "$len" | tr ' ' "$ch"
     if [ $STEPCOUNTER = true ]; then
-        printf "Step "$2
+        printf "Step "${LIGHT_GREEN}$2${NC}
         printf "/7 "
     fi
     printf "║\n"
@@ -158,9 +190,7 @@ function check_sudo {
     if sudo -n true 2>/dev/null; then 
         :
     else
-        echo "Oh, and Tux will need sudo rights to copy and install everything, so he'll ask" 
-        echo "about that soon."
-        echo ""
+        printf "${YELLOW}Oh, TUX will ask below about sudo rights to copy and install everything...${NC}\n\n"
     fi
 }
 
@@ -172,9 +202,9 @@ function install_if_not_found {
         else
             echo "Installing $pkg."
             if sudo apt-get -qq --allow-unauthenticated install $pkg; then
-                echo "Successfully installed $pkg"
+                printf "${YELLOW}Successfully installed $pkg${NC}\n"
             else
-                echo "Error installing $pkg"
+                printf "${LIGHT_RED}Error installing $pkg${NC}\n"
             fi        
         fi
     done
@@ -186,51 +216,53 @@ function uninstall_if_found {
         if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
             echo "Uninstalling $pkg."
             if sudo apt-get remove $pkg; then
-                echo "Successfully uninstalled $pkg"
+                printf "${YELLOW}Successfully uninstalled $pkg${NC}\n"
             else
-                echo "Error uninstalling $pkg"
+                printf "${LIGHT_RED}Error uninstalling $pkg${NC}\n"
             fi        
         else
-            echo -e "$pkg is not installed"
+            printf "${LIGHT_RED}$pkg is not installed${NC}\n"
         fi
     done
 }
 
 function goto_tux4ubuntu_org {
     echo ""
-    echo "Launching website in your favourite browser."
+    printf "${YELLOW}Launching website in your favourite browser...${NC}\n"
     x-www-browser https://tux4ubuntu.org/ &
-    read -n1 -r -p "Press any key to continue..." key
     echo ""
+    sleep 2
+    read -n1 -r -p "Press any key to continue..." key
 }
-
-
 
 while :
 do
     clear
+    if [ -z "$1" ]; then
+        :
+    else
+        STEPCOUNTER=true
+    fi
+    header "TUX DESKTOP THEMES" "$1"
     # Menu system as found here: http://stackoverflow.com/questions/20224862/bash-script-always-show-menu-after-loop-execution
-    cat<<EOF    
-╔══════════════════════════════════════════════════════════════════════════════╗
-║ TUX REFIND THEME ver 1.0                                   © 2018 Tux4Ubuntu ║
-║ Let's Bring Tux to Ubuntu                             https://tux4ubuntu.org ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║   What do you wanna do today? (Type in one of the following numbers)         ║
-║                                                                              ║
-║   1) Read manual instructions                  - Open up tux4ubuntu.org      ║
-║   2) Install                                   - Install the theme           ║
-║   3) Uninstall                                 - Uninstall the theme         ║
-║   ------------------------------------------------------------------------   ║
-║   Q) Quit                                      - Quit the installer (Ctrl+C) ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+    cat<<EOF                                                                              
+Type one of the following numbers/letters:          
+                                                                            
+1) Read Instructions                      - Open up tux4ubuntu.org      
+2) Install                                - Install Desktop themes          
+3) Uninstall                              - Uninstall Desktop themes       
+--------------------------------------------------------------------------------   
+Q) Skip                                   - Quit Desktop theme installer 
+
+(Press Control + C to quit the installer all together)
 EOF
     read -n1 -s
     case "$REPLY" in
     "1")    goto_tux4ubuntu_org;;
     "2")    install $1;;
     "3")    uninstall $1;;
+    "S")    exit                      ;;
+    "s")    exit                      ;;
     "Q")    exit                      ;;
     "q")    exit                      ;;
      * )    echo "invalid option"     ;;
