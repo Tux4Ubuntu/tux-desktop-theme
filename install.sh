@@ -86,6 +86,7 @@ function install {
     done
     echo ""
     read -n1 -r -p "Press any key to continue..." key
+    exit
 }
 
 function uninstall { 
@@ -109,7 +110,7 @@ function uninstall {
                     read -p "Do you want to continue? [Y/n] " prompt
                     if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
                     then
-                        gsettings set org.gnome.desktop.interface gtk-theme "Adwaita"
+                        gsettings set org.gnome.desktop.interface gtk-theme "Ambiance"
                         uninstall_if_found "arc-theme"
                     fi
                     
@@ -159,6 +160,7 @@ function uninstall {
     done
     echo ""
     read -n1 -r -p "Press any key to continue..." key
+    exit
 }
 
 function header {
@@ -200,7 +202,7 @@ function install_if_not_found {
         if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
             echo -e "$pkg is already installed"
         else
-            echo "Installing $pkg."
+            printf "${YELLOW}Installing $pkg.${NC}\n"
             if sudo apt-get -qq --allow-unauthenticated install $pkg; then
                 printf "${YELLOW}Successfully installed $pkg${NC}\n"
             else
@@ -229,10 +231,11 @@ function uninstall_if_found {
 function goto_tux4ubuntu_org {
     echo ""
     printf "${YELLOW}Launching website in your favourite browser...${NC}\n"
-    x-www-browser https://tux4ubuntu.org/ &
+    x-www-browser https://tux4ubuntu.org/portfolio/desktop &
     echo ""
     sleep 2
     read -n1 -r -p "Press any key to continue..." key
+    exit
 }
 
 while :
@@ -247,10 +250,11 @@ do
     # Menu system as found here: http://stackoverflow.com/questions/20224862/bash-script-always-show-menu-after-loop-execution
     cat<<EOF                                                                              
 Type one of the following numbers/letters:          
-                                                                            
-1) Read Instructions                      - Open up tux4ubuntu.org      
-2) Install                                - Install Desktop themes          
-3) Uninstall                              - Uninstall Desktop themes       
+
+1) Install                                - Install Desktop themes
+2) Uninstall                              - Uninstall Desktop themes       
+--------------------------------------------------------------------------------
+3) Read Instructions                      - Open up tux4ubuntu.org      
 --------------------------------------------------------------------------------   
 Q) Skip                                   - Quit Desktop theme installer 
 
@@ -258,9 +262,9 @@ Q) Skip                                   - Quit Desktop theme installer
 EOF
     read -n1 -s
     case "$REPLY" in
-    "1")    goto_tux4ubuntu_org;;
-    "2")    install $1;;
-    "3")    uninstall $1;;
+    "1")    install $1;;
+    "2")    uninstall $1;;
+    "3")    goto_tux4ubuntu_org;;
     "S")    exit                      ;;
     "s")    exit                      ;;
     "Q")    exit                      ;;
