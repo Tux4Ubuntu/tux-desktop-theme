@@ -68,7 +68,7 @@ function install {
                     case $yn in
                         Yes ) 
                             install_if_not_found "gnome-tweak-tool"
-                            gnome-tweaks -a
+                            gnome-tweaks &
                             break;;
                         No ) printf "\033c"
                             header "TUX DESKTOP THEMES" "$1"
