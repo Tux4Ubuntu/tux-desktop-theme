@@ -61,8 +61,8 @@ function install {
 
                 printf "\033c"
                 header "TUX DESKTOP THEMES" "$1"
-                echo "Successfully added some theming options á la Tux. To change to Arc Dark theme or other"
-                echo "changes you can use Gnome Tweak Tool. Do you want to install and open it?"
+                echo "Successfully changed your Desktop themes á la Tux. To tweak themes yourself you can"
+                echo "use Gnome Tweak Tool. Do you want to install and open it?"
                 echo ""
                 select yn in "Yes" "No"; do
                     case $yn in
