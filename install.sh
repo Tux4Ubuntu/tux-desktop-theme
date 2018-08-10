@@ -9,7 +9,7 @@ function install {
     printf "\033c"
     header "TUX DESKTOP THEMES" "$1"
     echo "Tux has scanned the web for the best themes and he likes:"
-    echo "   - Flat Remix GTK3 theme by daniruz <https://github.com/daniruiz/Flat-Remix-GTK>"
+    echo "   - Arc Theme by horst3180 <https://github.com/horst3180/arc-theme>"
     echo "   - Paper Icon & Cursor Theme at snwh.org <https://snwh.org/paper>"
     echo "   - Roboto Font by Google <https://www.fontsquirrel.com/fonts/roboto>"
     echo ""
