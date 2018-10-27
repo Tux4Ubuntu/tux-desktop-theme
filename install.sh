@@ -19,7 +19,7 @@ function install {
             Yes ) 
                 printf "\033c"
                 header "TUX DESKTOP THEMES" "$1"
-                echo "Installing packages..."
+                printf "${YELLOW}Installing packages...${NC}\n"   
                 check_sudo
 
                 # To eliminate the yes for adding the repository we add this echo, since echo implicitly sends a new line
@@ -27,8 +27,7 @@ function install {
                 echo | sudo add-apt-repository ppa:snwh/ppa
                 # Update apt-get
 
-                echo "Tux will now update your apt-get lists before install (which may take a while)."
-                echo ""
+                printf "${YELLOW}Tux will now update your apt-get lists before install (which may take a while).${NC}\n"
                 sleep 1
                 sudo apt-get update
                 # Install packages
@@ -36,17 +35,17 @@ function install {
                 
                 #Download and install Roboto Fonts (as described here: https://wiki.ubuntu.com/Fonts)
                 if fc-list | grep -i roboto >/dev/null; then
-                    echo "Roboto fonts already installed"
+                    printf "${YELLOW}Roboto fonts already installed.${NC}\n"                    
                 else
-                    echo "Installing Roboto fonts by Google."
+                    printf "${YELLOW}Installing Roboto fonts by Google.${NC}\n"   
                     roboto_temp_dir=$(mktemp -d)
                     wget -O $roboto_temp_dir/roboto.zip https://www.fontsquirrel.com/fonts/download/roboto
                     unzip $roboto_temp_dir/roboto.zip -d $roboto_temp_dir
                     sudo mkdir -p ~/.fonts
                     sudo cp $roboto_temp_dir/*.ttf ~/.fonts/
-                    echo "Successfully installed Roboto Font by Google."
+                    printf "${LIGHT_GREEN}Successfully installed Roboto Font by Google.${NC}\n"
                     echo ""
-                    echo "Tux will now update your font cache (may take a while)"
+                    printf "${YELLOW}Tux will now update your font cache (may take a while).${NC}\n"
                     echo ""
                     sleep 1
                     fc-cache -f -v
@@ -67,9 +66,9 @@ function install {
 
                 printf "\033c"
                 header "TUX DESKTOP THEMES" "$1"
-                echo "Successfully changed your Desktop themes á la Tux. To tweak themes yourself you can"
-                echo "use Gnome Tweak Tool. Do you want to install and open it?"
-                echo ""
+                printf "${LIGHT_GREEN}Successfully changed your Desktop themes á la Tux.${NC}\n\n"
+                printf "${YELLOW}REBOOT TO MAKE ALL CHANGES TAKE EFFECT.${NC}\n\n"
+                printf "To tweak themes yourself you can use Gnome Tweak Tool. Do you want to install\nand open it?\n"
                 select yn in "Yes" "No"; do
                     case $yn in
                         Yes ) 
@@ -117,6 +116,7 @@ function uninstall {
                     if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
                     then
                         gsettings set org.gnome.desktop.interface gtk-theme "Ambiance"
+                        gsettings set org.gnome.shell.extensions.user-theme name ""
                         uninstall_if_found "arc-theme"
                     fi
                     
