@@ -52,12 +52,18 @@ function install {
                     fc-cache -f -v
                 fi
 
-                gsettings set org.gnome.desktop.interface gtk-theme "Arc"
+                gsettings set org.gnome.desktop.interface gtk-theme "Arc-Dark"
                 gsettings set org.gnome.desktop.interface icon-theme "Paper"
                 gsettings set org.gnome.desktop.interface cursor-theme "Paper"
                 gsettings set org.gnome.desktop.wm.preferences titlebar-font "Roboto Bold 11"
                 gsettings set org.gnome.desktop.interface document-font-name "Roboto 11"
                 gsettings set org.gnome.desktop.interface font-name "Roboto 11"
+                
+                # Install user-themes
+                sudo apt install gnome-shell-extensions
+                sudo apt install chrome-gnome-shell
+                gnome-shell-extension-tool -e user-theme@gnome-shell-extensions.gcampax.github.com
+                gsettings set org.gnome.shell.extensions.user-theme name "Arc-Dark"
 
                 printf "\033c"
                 header "TUX DESKTOP THEMES" "$1"
